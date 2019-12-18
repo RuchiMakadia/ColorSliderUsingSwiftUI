@@ -10,7 +10,6 @@ import SwiftUI
 import Combine
 
 struct ContentView: View {
-    //@ObservedObject var settings = Color_value()
     @State var isOpen: Bool = false
     var body: some View {
         ZStack {
@@ -31,26 +30,6 @@ struct ContentView: View {
             }
         }
     }
-}
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
-}
-
-//color picker
-class saved_color: ObservableObject {
-    @Published var set_color: Color?
-}
-
-let obj_saved_color = saved_color()
-
-class Color_value: ObservableObject {
-    let objectWillChange = ObservableObjectPublisher()
-    var red_value = 0.0 { willSet { objectWillChange.send() } }
-    var green_value = 0.0 { willSet { objectWillChange.send() } }
-    var blue_value = 0.0 { willSet { objectWillChange.send() } }
 }
 
 struct SwiftUISlider: UIViewRepresentable {
@@ -103,13 +82,13 @@ struct slider_popup: View {
         GeometryReader { geometry in
         VStack(alignment: .leading) {
                 Spacer()
-                mainView(value_red: self.$settings.red_value,value_green: self.$settings.green_value, value_blue: self.$settings.blue_value)
+                circle_view_section(value_red: self.$settings.red_value,value_green: self.$settings.green_value, value_blue: self.$settings.blue_value)
                 Spacer()
                 set_slider(value: self.$settings.red_value, text_str: self.settings.red_value, tag: 1, width: geometry.size.width)
                 set_slider(value: self.$settings.green_value, text_str: self.settings.green_value, tag: 2, width: geometry.size.width)
                 set_slider(value: self.$settings.blue_value, text_str: self.settings.blue_value, tag: 3, width: geometry.size.width)
                 Spacer()
-                close_popup_section(pop_up_isOpen: self.$pop_up_isOpen)
+                close_popup_section(value_red: self.$settings.red_value, value_green: self.$settings.green_value, value_blue: self.$settings.blue_value, pop_up_isOpen: self.$pop_up_isOpen)
                 Spacer()
             }
             .background(Color.white)
@@ -118,10 +97,11 @@ struct slider_popup: View {
     }
 }
 
-let obj_trio_color = Color_value()
-
 struct close_popup_section: View {
- @Binding var pop_up_isOpen: Bool
+  @Binding var value_red: Double
+  @Binding var value_green: Double
+  @Binding var value_blue: Double
+  @Binding var pop_up_isOpen: Bool
     var body: some View {
         HStack {
             Spacer()
@@ -132,9 +112,8 @@ struct close_popup_section: View {
             })
             Spacer()
             Button(action: {
-                /*obj_saved_color.set_color = Color.init(UIColor(displayP3Red: CGFloat(obj_trio_color.red_value/255), green: CGFloat(obj_trio_color.green_value/255), blue: CGFloat(obj_trio_color.blue_value/255), alpha: 1.0))*/
+                obj_saved_color.set_color = Color.init(UIColor(displayP3Red: CGFloat(self.value_red/255), green: CGFloat(self.value_green/255), blue: CGFloat(self.value_blue/255), alpha: CGFloat(1.0)))
                 self.pop_up_isOpen = false
-                
             }, label: {
                 Text("Save")
             })
@@ -160,12 +139,11 @@ struct set_slider: View {
     var text_str: Double
     var tag: Int
     var width: CGFloat
-    //var height: CGFloat
     var body: some View {
         HStack {
             Spacer()
             SwiftUISlider(value: $value, tag: tag)
-                .frame(width: width * 0.7, height: 25)
+                .frame(width: width * 0.65, height: 25)
                 .background(LinearGradient(gradient: Gradient(colors: [.init(UIColor(displayP3Red: CGFloat(0/255), green: CGFloat(0/255), blue: CGFloat(0/255), alpha: CGFloat(1.0))), return_color(tag: tag)]), startPoint: .leading, endPoint: .trailing))
                 .cornerRadius(12)
                 .padding(.top, 20)
@@ -176,7 +154,7 @@ struct set_slider: View {
 }
 
 func set_slider_text_value(text_str: Double)->some View {
-    return Text(String(format: "%.2f", text_str))
+    return Text(String(format: "%.1f", text_str))
         .foregroundColor(Color.init(UIColor.label))
 }
 
@@ -193,7 +171,7 @@ func draw_circle(red: Double = 0, green: Double = 0, blue: Double = 0)-> some Vi
         .frame(width: 40, height: 40)
 }
 
-struct mainView: View {
+struct circle_view_section: View {
     @Binding var value_red: Double
     @Binding var value_green: Double
     @Binding var value_blue: Double
@@ -209,5 +187,24 @@ struct mainView: View {
                 draw_circle(red: value_red, green: value_green, blue: value_blue)
             }.frame(minWidth: 0, maxWidth: .infinity, alignment: .center)
         }
+    }
+}
+
+class saved_color: ObservableObject {
+    @Published var set_color: Color?
+}
+
+let obj_saved_color = saved_color()
+
+class Color_value: ObservableObject {
+    let objectWillChange = ObservableObjectPublisher()
+    var red_value = 0.0 { willSet { objectWillChange.send() } }
+    var green_value = 0.0 { willSet { objectWillChange.send() } }
+    var blue_value = 0.0 { willSet { objectWillChange.send() } }
+}
+
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
     }
 }
